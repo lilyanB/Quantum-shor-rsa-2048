@@ -1,0 +1,38 @@
+[project]
+name = "shor-rsa-2048"
+version = "0.1.0"
+description = "Shor's algorithm on small integers, and resource estimation for RSA-2048"
+requires-python = ">=3.12,<3.13"
+dependencies = [
+    "qiskit>=2.0",
+    "qiskit-aer>=0.15",
+    "numpy>=1.26",
+    "matplotlib>=3.8",
+    "pylatexenc>=2.10",
+    "sympy>=1.13",
+    # Microsoft QDK: the resource estimator used to cross-check our own
+    # logical -> physical model in stage 3.  Note the `qsharp` package is
+    # deprecated in favour of `qdk`; the estimator API path still needs
+    # confirming (qsharp.estimate works but is itself deprecated in favour
+    # of qdk.qre).  Settled in stage 3, not before.
+    "qdk>=1.31",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8",
+    "ipykernel>=6",
+    "jupyterlab>=4",
+    "nbclient>=0.10",
+    "nbformat>=5",
+]
+
+[tool.uv]
+package = false
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+markers = [
+    "slow: large-scale simulation or resource estimation",
+]

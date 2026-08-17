@@ -61,6 +61,68 @@ literature value, with a stated reason why the model here is more naive, is a re
 | 2     | 8–64 bits    | construct and count, cannot execute            |
 | 3     | 512–2048 bits| extrapolate and compare with published results |
 
+## Running it
+
+### Setup
+
+Requires **Python 3.12**. Nix pins the interpreter, `uv` installs the Python
+dependencies from `uv.lock`.
+
+```bash
+direnv allow        # once; afterwards the environment loads on cd
+nix develop         # or, without direnv
+uv sync --all-groups && source .venv/bin/activate   # or, without Nix
+```
+
+```bash
+pytest -q                  # full test suite
+pytest -q -m "not slow"    # skips the resource estimator
+```
+
+### The three stages
+
+#### Stage 1 — factor small integers
+
+```bash
+python -m shor.stage1_simulate 15          # one modulus
+python -m shor.stage1_simulate --all       # 15, 21, 35
+python -m shor.stage1_simulate 21 --draw   # show the order-finding circuit
+```
+
+Reports, per attempt: the random base `a`, the measured period `r`, whether the attempt
+succeeded, how many retries were needed, and the resulting factors — plus a verification
+that they multiply back to `N`.
+
+#### Stage 2 — count circuits too large to run
+
+```bash
+python -m shor.stage2_count --bits 8 16 32 64
+python -m shor.stage2_count --bits 8 16 32 64 --plot
+```
+
+Reports a table of logical qubits, circuit depth and **T-count** per modulus size, then
+fits a scaling law against `n`. Nothing here is executed; the circuits are only
+constructed and measured.
+
+#### Stage 3 — extrapolate to RSA-2048
+
+```bash
+python -m shor.stage3_estimate --bits 512 1024 2048
+python -m shor.stage3_estimate --bits 2048 --compare   # our model vs QDK estimator
+```
+
+Reports physical qubit count and runtime from our own surface-code model, the same
+figures from Microsoft's QDK estimator under identical assumptions, and the gap between
+them with a stated reason. All assumptions — physical error rate, gate and cycle times,
+code choice, target success probability — are printed alongside, because a figure without
+its assumptions cannot be checked.
+
+### Notebooks
+
+```bash
+jupyter lab
+```
+
 ## Why it matters
 
 Encrypted data can be **captured today and decrypted later**. The deadline for migrating
@@ -75,7 +137,16 @@ repository is meant to show.
 
 ## Status
 
-Nothing implemented yet. Stage 1 first.
+| what | state |
+| ---- | ----- |
+| development environment | working |
+| toolchain tests (`pytest -q`) | 3 passing |
+| stage 1 — simulate | not started |
+| stage 2 — count | not started |
+| stage 3 — estimate | not started |
+
+Stage 1 first. The `shor/stage*.py` files currently hold only the plan for each stage:
+what goes in, the pitfall to avoid, and the wall that limits it.
 
 ## References to check against
 
